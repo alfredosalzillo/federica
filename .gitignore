@@ -1,6 +1,4 @@
-./rpt2_cache
-./node_modules
-./package_lock.json
-
-# Project exclude paths
+/rpt2_cache/
 /node_modules/
+/package_lock.json
+/dist/
