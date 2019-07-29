@@ -9,6 +9,7 @@ import tsConfig from './tsconfig.json';
 
 export default {
   input: './src/main.ts',
+  cache: true,
   output: [
     {
       file: pkg.main,
@@ -17,7 +18,7 @@ export default {
   ],
   plugins: [
     nodeResolve({ browser: true }),
-    typescript(tsConfig),
+    typescript(),
     babel({
       extensions: [
         ...DEFAULT_EXTENSIONS,
