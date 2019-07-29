@@ -1,0 +1,6 @@
+./rpt2_cache
+./node_modules
+./package_lock.json
+
+# Project exclude paths
+/node_modules/
