@@ -34,7 +34,8 @@ const spaceship$ = hands$.pipe(
 );
 const clearCanvas = () => context.clearRect(0, 0, canvas.width, canvas.height);
 const drawSpaceship = ({ spaceship }: GameState) => {
-  const [x, y] = spaceship.center;
+  const [x] = spaceship.center;
+  const y = canvas.height - 150;
   const width = 50;
   const height = 50;
   context.beginPath();
@@ -42,7 +43,7 @@ const drawSpaceship = ({ spaceship }: GameState) => {
   context.lineTo(x + width / 2, y + height / 2);
   context.lineTo(x, y - height / 2);
   context.closePath();
-  context.lineWidth = 10;
+  context.lineWidth = 2;
   context.strokeStyle = '#0000FF';
   context.stroke();
 };
