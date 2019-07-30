@@ -57,9 +57,10 @@ const predictions$: Observable<Prediction[]> = zip(status$, model$).pipe(
 const renderPredictions = ([model, predictions]) =>
   model.renderPredictions(predictions, canvas, context, video);
 
-combineLatest(model$, predictions$)
-  .pipe(
-    tap(renderPredictions),
-    tap(([_, predictions]) => predictions.map(toHand).forEach(console.log)),
-  )
-  .subscribe();
+combineLatest([
+  model$,
+  predictions$,
+]).pipe(
+  tap(renderPredictions),
+  tap(([_, predictions]) => predictions.map(toHand).forEach(console.log)),
+).subscribe();
