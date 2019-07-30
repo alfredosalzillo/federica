@@ -60,6 +60,7 @@ export const handRecognizer = (
     model$,
     predictions$,
   ]).pipe(
+    tap(renderPredictions),
     map(([_, predictions]) => predictions.map(toHand)),
   );
 };
