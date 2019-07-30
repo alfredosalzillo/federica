@@ -1,0 +1,14 @@
+{
+  "extends": [
+    "tslint:latest",
+    "tslint-config-prettier",
+    "tslint-config-airbnb-base"
+  ],
+  "rules": {
+    "interface-over-type-literal": false,
+    "no-submodule-imports": false,
+    "object-literal-sort-keys": false,
+    "no-console": false,
+    "no-magic-numbers": false
+  }
+}
