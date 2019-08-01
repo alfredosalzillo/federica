@@ -95,13 +95,29 @@ const bullets$ = combineLatest([
   pluck(1),
 );
 
-const advanceAsteroid = advance<Asteroid>(0, -100);
+type Point = [number, number];
+const distance = ([x1, y1]: Point, [x2, y2]: Point): number => Math
+  .sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
+
+const advanceAsteroid = advance<Asteroid>(0, -70);
 const asteroidInBound = ({ position: [_, y] }: Asteroid) => y <= canvas.height;
 const asteroidIsAlive = ({ power }: Asteroid) => power > 0;
 const adjustLife = (bullets: Bullet[]) => (asteroid: Asteroid): Asteroid => ({
   ...asteroid,
-  power: 0,
+  power: asteroid.power - bullets
+    .filter(bullet => distance(bullet.position, asteroid.position) < asteroid.power).length,
 });
+
+type WithPosition = {
+  position: Point;
+};
+const collisions = <
+  T1 extends WithPosition,
+  T2 extends WithPosition,
+  >(t1s: T1[], ts2: T2[]): Array<[T1, T2]> => t1s
+  .map(t1 => ts2.filter(t2 => distance(t1.position, t2.position)).map(t2 => [t1, t2]))
+  .reduce((acc, value) => [...acc, ...value]) as Array<[T1, T2]>;
+
 const asteroids$ = combineLatest([
   timer$,
   timer$.pipe(
@@ -170,6 +186,7 @@ const game$ = combineLatest([
       ...state.asteroids
         .map(advanceAsteroid(elapsed))
         .filter(asteroidInBound)
+        .map(adjustLife(bullets))
         .filter(asteroidIsAlive),
       ...(asteroid ? [asteroid] : []),
     ];
