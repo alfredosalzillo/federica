@@ -38,7 +38,9 @@ const isEntity = <T extends Entity>(entityType: T['type']) => (value): value is 
 const isBullet = isEntity<Bullet>('bullet');
 const isAsteroid = isEntity<Asteroid>('asteroid');
 
+type GameStatus = 'started' | 'stopped';
 type GameState = {
+  status: GameStatus,
   fps: number,
   asteroids: Asteroid[],
   bullets: Bullet[],
@@ -75,12 +77,15 @@ const modelParams: ModelParams = {
 };
 const timer$ = interval(0, animationFrameScheduler)
   .pipe(
-    timeInterval(),
-    map(elapsed => elapsed.interval),
+    share(),
   );
 const hands$ = handRecognizer(modelParams, canvas, context, video).pipe(share());
+const start$ = hands$.pipe(
+  pluck(0),
+  map(Boolean),
+);
 const spaceship$ = hands$.pipe(
-  map(hands => hands[0]),
+  pluck(0),
   filter(hand => !!hand),
   map(({ mode, center: [x] }): Spaceship => ({
     mode: mode === 'close' ? 'attack' : 'charge',
@@ -124,7 +129,7 @@ const adjustLife = (bullets: Bullet[]) => (asteroid: Asteroid): Asteroid => ({
 const asteroids$ = combineLatest([
   timer$,
   timer$.pipe(
-    throttleTime(100),
+    throttleTime(1000),
     map((): Asteroid => ({
       id: btoa(String(Date.now())),
       type: 'asteroid',
@@ -137,6 +142,7 @@ const asteroids$ = combineLatest([
 );
 const clearCanvas = () => context.clearRect(0, 0, canvas.width, canvas.height);
 const drawSpaceship = ({ spaceship }: GameState) => {
+  if (!spaceship) return;
   const [x, y] = spaceship.position;
   const width = 50;
   const height = 50;
@@ -171,8 +177,14 @@ const drawAsteroid = ({ position: [x, y], power }: Asteroid) => {
   context.fill();
 };
 const drawAsteroids = ({ asteroids }: GameState) => asteroids.forEach(drawAsteroid);
+const drawFps = ({ fps }: GameState) => {
+  context.fillStyle = '#000000';
+  context.font = '10px Arial';
+  context.fillText(`fps: ${fps.toFixed(0)}`, 10, 20);
+};
 
 const initialState: GameState = {
+  status: 'stopped',
   spaceship: null,
   asteroids: [],
   bullets: [],
@@ -184,10 +196,27 @@ const game$ = combineLatest([
   spaceship$,
   bullets$,
   asteroids$,
+  start$,
 ]).pipe(
+  throttleTime(1000 / 144, animationFrameScheduler),
   nullIfNotChanged(2),
   nullIfNotChanged(3),
-  scan((state: GameState, [elapsed, spaceship, bullet, asteroid]): GameState => {
+  timeInterval(animationFrameScheduler),
+  scan((
+    state: GameState,
+    {
+      interval: elapsed,
+      value: [_, spaceship, bullet, asteroid, isStarted],
+    },
+  ): GameState => {
+    const status: GameStatus = isStarted ? 'started' : 'stopped';
+    const fps = 1000 / elapsed;
+    if (status === 'stopped') {
+      return {
+        ...state,
+        fps,
+      };
+    }
     const advanceBullet = advance<Bullet>(0, 200);
     const advanceAsteroid = advance<Asteroid>(0, -70);
     const asteroidsCollidingSpaceship = state.asteroids
@@ -215,16 +244,18 @@ const game$ = combineLatest([
       spaceship,
       asteroids,
       bullets,
-      fps: 1000 / elapsed,
+      fps,
       life: Math.max(0, state.life - asteroidsCollidingSpaceship
         .reduce((acc, collision) => acc + collision.power, 0)),
+      status: state.status,
     };
   }, initialState),
   tap(clearCanvas),
+  tap(drawBullets),
   tap(drawAsteroids),
   tap(drawSpaceship),
-  tap(drawBullets),
   tap(drawLife),
+  tap(drawFps),
 );
 
 game$.subscribe();
