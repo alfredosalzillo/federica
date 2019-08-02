@@ -9,6 +9,7 @@
     "no-submodule-imports": false,
     "object-literal-sort-keys": false,
     "no-console": false,
-    "no-magic-numbers": false
+    "no-magic-numbers": false,
+    "prefer-object-spread": false
   }
 }
