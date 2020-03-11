@@ -5,7 +5,6 @@ import nodeResolve from "rollup-plugin-node-resolve";
 import { DEFAULT_EXTENSIONS } from "@babel/core";
 import babel from 'rollup-plugin-babel';
 import pkg from './package.json';
-import tsConfig from './tsconfig.json';
 
 export default {
   input: './src/main.ts',
