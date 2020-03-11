@@ -6,7 +6,7 @@ import { DEFAULT_EXTENSIONS } from "@babel/core";
 import babel from 'rollup-plugin-babel';
 import pkg from './package.json';
 
-export default {
+export default ({ watch }) => ({
   input: './src/main.ts',
   cache: true,
   output: [
@@ -25,9 +25,9 @@ export default {
         '.tsx'
       ]
     }),
-    serve({
+    watch && serve({
       contentBase: ['./dist', './static'],
     }),
-    livereload(),
+    watch && livereload(),
   ]
-}
+});
